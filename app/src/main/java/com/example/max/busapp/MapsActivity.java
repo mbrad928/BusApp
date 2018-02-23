@@ -13,12 +13,7 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.GroundOverlay;
 import com.google.android.gms.maps.model.GroundOverlayOptions;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnCameraMoveListener {
 
@@ -36,22 +31,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
         FirebaseDatabase database = FirebaseHelper.getInstance().db;
-        DatabaseReference myRef = database.getReference("C1/Lat");
-
-        myRef.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                // This method is called once with the initial value and again
-                // whenever data at this location is updated.
-                String value = dataSnapshot.getValue(String.class);
-                System.out.print(value);
-            }
-
-            @Override
-            public void onCancelled(DatabaseError error) {
-                // Failed to read value
-            }
-        });
     }
 
 
@@ -67,20 +46,31 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        mMap.setOnCameraMoveListener(this);
         // Add a marker in Sydney and move the camera
         LatLng baltimore = new LatLng(39.281516, -76.597448);
-      //  mMap.addMarker(new MarkerOptions().position(baltimore).title("Marker in Sydney"));
-   //     mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(baltimore,17));
         BitmapDescriptor image = BitmapDescriptorFactory.fromResource(R.mipmap.redcartopviewhi);
         car  = mMap.addGroundOverlay(new GroundOverlayOptions().image(image).position(baltimore,50f, 30f));
+        mMap.setOnCameraMoveListener(this);
+    }
+
+    @Override
+    public void onCameraMove()
+    {
+        if(car != null && car.isVisible() && mMap != null)
+        {
+            car.setPosition(mMap.getCameraPosition().target);
+        }
     }
 
     /*Called when Go Button clicked*/
     public void startRoute(View view)
     {
-        //
+        if(!FirebaseHelper.latLongList.isEmpty())
+        {
+            LatLong loc1 = FirebaseHelper.latLongList.get(0);
+            mMap.moveCamera(CameraUpdateFactory.scrollBy(400,0));
+        }
     }
 
 }
